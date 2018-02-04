@@ -47,6 +47,7 @@ static void MapPages(PageTable& page_table, VAddr base, u64 size, u8* memory, Pa
 
         page_table.attributes[base] = type;
         page_table.pointers[base] = memory;
+        page_table.fast_pointers[base] = memory;
 
         base += 1;
         if (memory != nullptr)
