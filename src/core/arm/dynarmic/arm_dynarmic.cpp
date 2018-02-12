@@ -11,6 +11,9 @@
 #include "core/hle/kernel/memory.h"
 #include "core/hle/kernel/svc.h"
 #include "core/memory.h"
+#include "core/hle/kernel/memory.h"
+
+using Vector = Dynarmic::A64::Vector;
 
 using Vector = Dynarmic::A64::Vector;
 
@@ -89,7 +92,12 @@ public:
 };
 
 std::unique_ptr<Dynarmic::A64::Jit> MakeJit(const std::unique_ptr<ARM_Dynarmic_Callbacks>& cb) {
-    Dynarmic::A64::UserConfig config{cb.get()};
+    Dynarmic::A64::UserConfig config;
+    config.callbacks = cb.get();
+    config.tpidrro_el0 = &cb->tpidrr0_el0;
+    config.dczid_el0 = 4;
+    config.page_table = reinterpret_cast<void**>(Kernel::g_current_process->vm_manager.page_table.fast_pointers.data());
+    config.page_table_num_entries = Memory::PAGE_TABLE_NUM_ENTRIES;
     return std::make_unique<Dynarmic::A64::Jit>(config);
 }
 

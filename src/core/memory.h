@@ -66,6 +66,7 @@ struct PageTable {
      * corresponding entry in the `attributes` array is of type `Memory`.
      */
     std::array<u8*, PAGE_TABLE_NUM_ENTRIES> pointers;
+    std::array<u8*, PAGE_TABLE_NUM_ENTRIES> fast_pointers;
 
     /**
      * Contains MMIO handlers that back memory regions whose entries in the `attribute` array is of
