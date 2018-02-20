@@ -118,6 +118,11 @@ boost::optional<T> ReadSpecial(VAddr addr);
 
 template <typename T>
 T Read(const VAddr vaddr) {
+    if ((vaddr >> PAGE_BITS) >= PAGE_TABLE_NUM_ENTRIES) {
+        LOG_ERROR(HW_Memory, "read beyond page table Read%lu @ 0x%016llX", sizeof(T) * 8, vaddr);
+        return 0;
+    }
+
     const PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];
     switch (type) {
     case PageType::Unmapped:
@@ -146,6 +151,12 @@ bool WriteSpecial(VAddr addr, const T data);
 
 template <typename T>
 void Write(const VAddr vaddr, const T data) {
+    if ((vaddr >> PAGE_BITS) >= PAGE_TABLE_NUM_ENTRIES) {
+        LOG_ERROR(HW_Memory, "write beyond page table Write%lu 0x%08X @ 0x%08X", sizeof(data) * 8,
+                  (u32)data, vaddr);
+        return;
+    }
+
     const PageType type = current_page_table->attributes[vaddr >> PAGE_BITS];
     switch (type) {
     case PageType::Unmapped:
