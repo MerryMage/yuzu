@@ -20,7 +20,7 @@ public:
     /// Creates a low-pass filter.
     /// @param cutoff Determines the cutoff frequency. A value from 0.0 to 1.0.
     /// @param quality Determines the quality factor of this filter.
-    static Filter LowPass(double cutoff, double Q);
+    static Filter LowPass(double cutoff, double Q = 0.7071);
 
     /// Passthrough filter.
     Filter();
@@ -38,6 +38,23 @@ private:
     std::array<std::array<double, channel_count>, 3> in;
     /// Output History
     std::array<std::array<double, channel_count>, 3> out;
+};
+
+struct CascadingFilter {
+    /// Creates a cascading low-pass filter.
+    /// @param cutoff Determines the cutoff frequency. A value from 0.0 to 1.0.
+    /// @param cascade_size Number of biquads in cascade.
+    static CascadingFilter LowPass(double cutoff, size_t cascade_size);
+
+    /// Passthrough filter.
+    CascadingFilter();
+
+    explicit CascadingFilter(const std::vector<Filter>& filters);
+
+    void Process(std::vector<s16>& signal);
+
+private:
+    std::vector<Filter> filters;
 };
 
 } // namespace AudioCore

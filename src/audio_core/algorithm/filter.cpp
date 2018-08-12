@@ -55,4 +55,29 @@ void Filter::Process(std::vector<s16>& signal) {
     }
 }
 
+/// Calculates the appropriate Q for each biquad in a cascading filter.
+/// @param total_count The total number of biquads to be cascaded.
+/// @param index 0-index of the biquad to calculate the Q value for.
+static double CascadingBiquadQ(size_t total_count, size_t index) {
+    const double pole = M_PI * (2 * index + 1) / (4.0 * total_count);
+    return 1.0 / (2.0 * std::cos(pole));
+}
+
+CascadingFilter CascadingFilter::LowPass(double cutoff, size_t cascade_size) {
+    std::vector<Filter> cascade(cascade_size);
+    for (size_t i = 0; i < cascade_size; i++) {
+        cascade[i] = Filter::LowPass(cutoff, CascadingBiquadQ(cascade_size, i));
+    }
+    return CascadingFilter{cascade};
+}
+
+CascadingFilter::CascadingFilter() = default;
+CascadingFilter::CascadingFilter(const std::vector<Filter>& filters) : filters(filters) {}
+
+void CascadingFilter::Process(std::vector<s16>& signal) {
+    for (auto& filter : filters) {
+        filter.Process(signal);
+    }
+}
+
 } // namespace AudioCore
