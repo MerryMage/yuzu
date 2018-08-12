@@ -39,10 +39,8 @@ Filter::Filter(double a0, double a1, double a2, double b0, double b1, double b2)
 void Filter::Process(std::vector<s16>& signal) {
     const size_t num_frames = signal.size() / 2;
     for (size_t i = 0; i < num_frames; i++) {
-        in[2] = in[1];
-        in[1] = in[0];
-        out[2] = out[1];
-        out[1] = out[0];
+        std::rotate(in.begin(), in.end() - 1, in.end());
+        std::rotate(out.begin(), out.end() - 1, out.end());
 
         for (size_t ch = 0; ch < channel_count; ch++) {
             in[0][ch] = signal[i * 2 + ch];

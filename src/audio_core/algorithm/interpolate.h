@@ -14,7 +14,7 @@ namespace AudioCore {
 struct InterpolationState {
     double current_ratio = 0.0;
     CascadingFilter nyquist;
-    std::array<s16, 2> last_frame = {};
+    std::array<std::array<s16, 2>, 7> history = {};
     double position = 0;
 };
 
