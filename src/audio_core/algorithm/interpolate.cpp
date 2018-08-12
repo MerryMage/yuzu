@@ -18,7 +18,11 @@ std::vector<s16> Interpolate(InterpolationState& state, std::vector<s16> input, 
     if (ratio <= 0) {
         LOG_CRITICAL(Audio, "Nonsensical interpolation ratio {}", ratio);
         ratio = 1.0;
+    } else if (ratio != state.current_ratio) {
+        state.nyquist = Filter::LowPass(std::min(0.5, 0.5 / ratio), 1 / std::sqrt(2.0));
     }
+
+    state.nyquist.Process(input);
 
     const size_t num_frames = input.size() / 2;
     double position = state.position;

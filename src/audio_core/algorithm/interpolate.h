@@ -6,12 +6,14 @@
 
 #include <array>
 #include <vector>
-
+#include "audio_core/algorithm/filter.h"
 #include "common/common_types.h"
 
 namespace AudioCore {
 
 struct InterpolationState {
+    double current_ratio = 0.0;
+    Filter nyquist;
     std::array<s16, 2> last_frame = {};
     double position = 0;
 };

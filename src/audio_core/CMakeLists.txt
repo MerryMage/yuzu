@@ -1,4 +1,6 @@
 add_library(audio_core STATIC
+    algorithm/filter.cpp
+    algorithm/filter.h
     algorithm/interpolate.cpp
     algorithm/interpolate.h
     audio_out.cpp
