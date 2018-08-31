@@ -8,6 +8,7 @@
 #include <cmath>
 #include <vector>
 #include "audio_core/algorithm/interpolate.h"
+#include "common/assert.h"
 #include "common/common_types.h"
 #include "common/logging/log.h"
 
@@ -21,30 +22,32 @@ static double Lanczos(size_t a, double x) {
     return a * std::sin(px) * std::sin(px / a) / (px * px);
 }
 
-std::vector<s16> Interpolate(InterpolationState& state, std::vector<s16> input, double ratio) {
+void Interpolator::SetRatio(double ratio) {
+    if (ratio != current_ratio) {
+        const double cutoff_frequency = std::min(0.5 / ratio, 0.5 * ratio);
+        nyquist = CascadingFilter::LowPass(std::clamp(cutoff_frequency, 0.0, 0.4), 3);
+        current_ratio = ratio;
+        Reset();
+    }
+}
+
+void Interpolator::Reset() {
+    h = {};
+    pos = 0;
+}
+
+std::vector<s16> Interpolator::Process(std::vector<s16> input) {
     if (input.size() < 2)
         return {};
 
-    if (ratio <= 0) {
-        LOG_CRITICAL(Audio, "Nonsensical interpolation ratio {}", ratio);
-        ratio = 1.0;
-    }
+    ASSERT(current_ratio != 0.0);
+    nyquist.Process(input);
 
-    if (ratio != state.current_ratio) {
-        const double cutoff_frequency = std::min(0.5 / ratio, 0.5 * ratio);
-        state.nyquist = CascadingFilter::LowPass(std::clamp(cutoff_frequency, 0.0, 0.4), 3);
-        state.current_ratio = ratio;
-    }
-    state.nyquist.Process(input);
-
-    constexpr size_t taps = InterpolationState::lanczos_taps;
     const size_t num_frames = input.size() / 2;
 
     std::vector<s16> output;
-    output.reserve(static_cast<size_t>(input.size() / ratio + 4));
+    output.reserve(static_cast<size_t>(input.size() / current_ratio + 4));
 
-    double& pos = state.position;
-    auto& h = state.history;
     for (size_t i = 0; i < num_frames; ++i) {
         std::rotate(h.begin(), h.end() - 1, h.end());
         h[0][0] = input[i * 2 + 0];
@@ -54,13 +57,13 @@ std::vector<s16> Interpolate(InterpolationState& state, std::vector<s16> input, 
             double l = 0.0;
             double r = 0.0;
             for (size_t j = 0; j < h.size(); j++) {
-                l += Lanczos(taps, pos + j - taps + 1) * h[j][0];
-                r += Lanczos(taps, pos + j - taps + 1) * h[j][1];
+                l += Lanczos(lanczos_taps, pos + j - lanczos_taps + 1) * h[j][0];
+                r += Lanczos(lanczos_taps, pos + j - lanczos_taps + 1) * h[j][1];
             }
             output.emplace_back(static_cast<s16>(std::clamp(l, -32768.0, 32767.0)));
             output.emplace_back(static_cast<s16>(std::clamp(r, -32768.0, 32767.0)));
 
-            pos += ratio;
+            pos += current_ratio;
         }
         pos -= 1.0;
     }

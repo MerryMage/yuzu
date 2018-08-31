@@ -200,7 +200,8 @@ void AudioRenderer::VoiceState::RefreshBuffer() {
         break;
     }
 
-    samples = Interpolate(interp_state, std::move(samples), Info().sample_rate, STREAM_SAMPLE_RATE);
+    interp.SetRatio(Info().sample_rate, STREAM_SAMPLE_RATE);
+    samples = interp.Process(std::move(samples));
 
     is_refresh_pending = false;
 }

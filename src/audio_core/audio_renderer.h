@@ -195,7 +195,7 @@ private:
         size_t wave_index{};
         size_t offset{};
         Codec::ADPCMState adpcm_state{};
-        InterpolationState interp_state{};
+        Interpolator interp{};
         std::vector<s16> samples;
         VoiceOutStatus out_status{};
         VoiceInfo info{};
