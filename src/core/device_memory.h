@@ -6,6 +6,7 @@
 
 #include "common/assert.h"
 #include "common/common_funcs.h"
+#include "common/fastmem.h"
 #include "common/virtual_buffer.h"
 
 namespace Core {
@@ -24,6 +25,10 @@ enum : u64 {
 };
 }; // namespace DramMemoryMap
 
+inline u64 GetDramOffset(PAddr addr) {
+    return addr - DramMemoryMap::Base;
+}
+
 class DeviceMemory : NonCopyable {
 public:
     explicit DeviceMemory(Core::System& system);
@@ -31,20 +36,26 @@ public:
 
     template <typename T>
     PAddr GetPhysicalAddr(const T* ptr) const {
-        return (reinterpret_cast<uintptr_t>(ptr) - reinterpret_cast<uintptr_t>(buffer.data())) +
+        return (reinterpret_cast<uintptr_t>(ptr) -
+                reinterpret_cast<uintptr_t>(fastmem.GetDramPointer())) +
                DramMemoryMap::Base;
     }
 
     u8* GetPointer(PAddr addr) {
-        return buffer.data() + (addr - DramMemoryMap::Base);
+        return fastmem.GetDramPointer() + GetDramOffset(addr);
     }
 
     const u8* GetPointer(PAddr addr) const {
-        return buffer.data() + (addr - DramMemoryMap::Base);
+        return fastmem.GetDramPointer() + GetDramOffset(addr);
+    }
+
+    void ResetFastmemRegion(Common::FastmemRegion& region,
+                            std::size_t address_space_width_in_bits) {
+        return fastmem.ResetRegion(region, address_space_width_in_bits);
     }
 
 private:
-    Common::VirtualBuffer<u8> buffer;
+    Common::FastmemManager fastmem;
     Core::System& system;
 };
 

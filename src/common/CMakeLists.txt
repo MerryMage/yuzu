@@ -110,6 +110,8 @@ add_library(common STATIC
     common_types.h
     dynamic_library.cpp
     dynamic_library.h
+    fastmem.cpp
+    fastmem.h
     file_util.cpp
     file_util.h
     hash.h

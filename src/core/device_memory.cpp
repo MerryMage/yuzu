@@ -8,7 +8,7 @@
 
 namespace Core {
 
-DeviceMemory::DeviceMemory(System& system) : buffer{DramMemoryMap::Size}, system{system} {}
+DeviceMemory::DeviceMemory(System& system) : fastmem{DramMemoryMap::Size}, system{system} {}
 
 DeviceMemory::~DeviceMemory() = default;
 

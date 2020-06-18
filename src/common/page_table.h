@@ -9,6 +9,7 @@
 #include <boost/icl/interval_map.hpp>
 
 #include "common/common_types.h"
+#include "common/fastmem.h"
 #include "common/memory_hook.h"
 #include "common/virtual_buffer.h"
 
@@ -71,6 +72,8 @@ struct PageTable {
     VirtualBuffer<u64> backing_addr;
 
     VirtualBuffer<PageType> attributes;
+
+    FastmemRegion fastmem_region;
 };
 
 } // namespace Common

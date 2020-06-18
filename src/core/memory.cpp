@@ -552,7 +552,7 @@ struct Memory::Impl {
      *
      * @param page_table The page table to use to perform the mapping.
      * @param base       The base address to begin mapping at.
-     * @param size       The total size of the range in bytes.
+     * @param size       The total size of the range in pages.
      * @param memory     The memory to map.
      * @param type       The page type to map the memory as.
      */
@@ -577,6 +577,7 @@ struct Memory::Impl {
                    base + page_table.pointers.size());
 
         if (!target) {
+            page_table.fastmem_region.Unmap(base << PAGE_BITS, size);
             while (base != end) {
                 page_table.pointers[base] = nullptr;
                 page_table.attributes[base] = type;
@@ -585,6 +586,7 @@ struct Memory::Impl {
                 base += 1;
             }
         } else {
+            page_table.fastmem_region.Map(base << PAGE_BITS, size, GetDramOffset(target));
             while (base != end) {
                 page_table.pointers[base] =
                     system.DeviceMemory().GetPointer(target) - (base << PAGE_BITS);

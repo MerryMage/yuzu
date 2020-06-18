@@ -6,6 +6,7 @@
 #include "common/assert.h"
 #include "common/scope_exit.h"
 #include "core/core.h"
+#include "core/device_memory.h"
 #include "core/hle/kernel/errors.h"
 #include "core/hle/kernel/kernel.h"
 #include "core/hle/kernel/memory/address_space_info.h"
@@ -266,6 +267,7 @@ ResultCode PageTable::InitializeForProcess(FileSys::ProgramAddressSpaceType as_t
     memory_pool = pool;
 
     page_table_impl.Resize(address_space_width, PageBits, true);
+    system.DeviceMemory().ResetFastmemRegion(page_table_impl.fastmem_region, address_space_width);
 
     return InitializeMemoryLayout(start, end);
 }
