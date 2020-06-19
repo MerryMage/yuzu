@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <cstddef>
+#include <utility>
 #include <vector>
 #include "common/common_types.h"
 
@@ -26,6 +28,11 @@ private:
     friend class FastmemManager;
 
     u8* base_pointer = nullptr;
+
+#ifndef _WIN32
+    int fd = -1;
+    size_t region_size = 0;
+#endif
 };
 
 class FastmemManager final {
@@ -41,6 +48,12 @@ public:
 
 private:
     u8* dram_pointer = nullptr;
+
+#ifndef _WIN32
+    std::size_t dram_size;
+    int fd = -1;
+    std::vector<std::pair<u8*, std::size_t>> fastmem_regions;
+#endif
 };
 
 } // namespace Common
